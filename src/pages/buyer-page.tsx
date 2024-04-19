@@ -11,7 +11,7 @@ const BuyerPage = () => {
     const [currency, setCurrency] = useState<Currency>(Currency.RUB)
 
     function modifyTicketData(modifiedArray: ITicket[]) {
-        setFilteredData(modifiedArray)
+        setFilteredData(sortByPrice(modifiedArray))
     }
 
     return (

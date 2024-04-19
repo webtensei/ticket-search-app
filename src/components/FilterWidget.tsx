@@ -10,7 +10,7 @@ const FilterWidget = ({currentState, modifyFunc, currency, setCurrency}: {
     currentState: ITicket[],
     currency: Currency,
     setCurrency: (currency:Currency) => void,
-    modifyFunc: () => void
+    modifyFunc: (tickets:ITicket[]) => void
 }) => {
     const [uniqueStopsSet, setUniqueStopsSet] = useState<Set<number>>(new Set());
     const [activeStops, setActiveStops] = useState<number[]>([])
@@ -19,10 +19,21 @@ const FilterWidget = ({currentState, modifyFunc, currency, setCurrency}: {
         setCurrency(currency);
     }
     const handleSelectorChange = (stops: number) => {
-        activeStops.includes(stops)
-            ? setActiveStops((prevStops) => prevStops.filter((stop) => stop !== stops))
-            : setActiveStops(prevState => [...prevState, stops])
+        if (stops === -1) {
+            setActiveStops([]);
+        } else {
+            activeStops.includes(stops)
+                ? setActiveStops((prevStops) => prevStops.filter((stop) => stop !== stops))
+                : setActiveStops(prevState => [...prevState, stops])
+        }
     }
+    useEffect(() => {
+        const filteredTickets = currentState.filter((ticket) =>
+            activeStops.length === 0 || activeStops.includes(ticket.stops)
+        );
+        modifyFunc(filteredTickets);
+
+    }, [activeStops]);
 
     useEffect(() => {
         const stopsSet = new Set<number>(currentState.map(ticket => ticket.stops));
@@ -43,6 +54,7 @@ const FilterWidget = ({currentState, modifyFunc, currency, setCurrency}: {
             </div>
             <div data-bid="stops-select" className='mt-8 flex flex-col'>
                 <p className='uppercase text-gray-500 font-bold mb-4'>Количество пересадок</p>
+                <Select onChange={() => handleSelectorChange(-1)} checked={activeStops.length === 0} key={'all'} value={'all'} label={'Все'}/>
                 {Array.from(uniqueStopsSet).map((stops) => (
                     <Select onChange={() => {
                         handleSelectorChange(stops)
